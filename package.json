@@ -23,7 +23,7 @@
   "homepage": "https://github.com/arquivo/puppeteer-webrender#readme",
   "dependencies": {
     "@types/jest": "^25.1.2",
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "puppeteer": "^5.5.0",
     "puppeteer-cluster": "^0.22.0"
   },
