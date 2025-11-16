@@ -1,31 +1,40 @@
-FROM node:12-slim
+FROM docker.io/library/node:25.2.0
 
-RUN apt-get update \
-     && apt-get install -y wget --no-install-recommends \
-     && apt-get install -y gnupg gnupg1 gnupg2
+# Install necessary dependencies for Puppeteer and Chromium
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  fonts-liberation \
+  libasound2 \
+  libatk-bridge2.0-0 \
+  libatk1.0-0 \
+  libcups2 \
+  libdrm2 \
+  libgbm1 \
+  libgtk-3-0 \
+  libnspr4 \
+  libnss3 \
+  libx11-xcb1 \
+  libxcomposite1 \
+  libxdamage1 \
+  libxrandr2 \
+  xdg-utils \
+  libu2f-udev \
+  libxshmfence1 \
+  libglu1-mesa \
+  chromium \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
 
-RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
-RUN sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
-
-RUN apt-get update \
-     && apt-get install -y libxext6:amd64 google-chrome-stable --no-install-recommends
-
-RUN rm -rf /var/lib/apt/lists/*
-
-RUN useradd -ms /bin/bash webrender
-
-WORKDIR /webrender
-
-RUN chown -R webrender:webrender .
-
-USER webrender
-
-COPY . .
-
-RUN npm install
+# Puppeteer setup: Skip Chromium download and use the installed Chromium
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH="/usr/bin/chromium"
 
 ARG PORT=5000
-
 ENV PORT=$PORT
+EXPOSE $PORT
 
-CMD node app/start.js
+WORKDIR /app
+COPY ./package.json ./
+RUN npm install
+COPY . .
+
+CMD ["npm", "start"]
