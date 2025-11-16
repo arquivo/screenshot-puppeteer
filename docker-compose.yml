@@ -1,0 +1,7 @@
+
+services:
+  webrender:
+    build: .
+    container_name: puppeteer-webrender
+    ports:
+      - "5000:5000"
