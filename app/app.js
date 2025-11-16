@@ -41,6 +41,7 @@ const app = express();
     const allowedDomainsArray = allowedDomains.split(',');
 
     let urlParameter = decodeURI(request.query.url);
+    console.log("Starting taking screenshot for URL " +  urlParameter)
     let validUrl = render.validateUrl(urlParameter, allowedDomainsArray);
     if (!validUrl){
       response.status(405).send("Wrong URL to execute the screenshot.");
