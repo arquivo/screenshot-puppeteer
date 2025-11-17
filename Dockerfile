@@ -33,8 +33,13 @@ ENV PORT=$PORT
 EXPOSE $PORT
 
 WORKDIR /app
-COPY ./package.json ./
-RUN npm install
-COPY . .
 
+# Copy package manager files and install dependencies
+COPY ./package.json ./package-lock.json ./
+RUN npm install
+
+# Copy application and test files
+COPY ./app ./tests ./
+
+# Start the application
 CMD ["npm", "start"]
