@@ -44,9 +44,8 @@ const app = express();
     console.log("Starting taking screenshot for URL " +  urlParameter)
     let validUrl = render.validateUrl(urlParameter, allowedDomainsArray);
     if (!validUrl){
-      response.status(405).send("Wrong URL to execute the screenshot.");
-    }
-    else {
+      response.status(400).send("Wrong URL to execute the screenshot.");
+    } else {
       var parametersObject = new Object();
       parametersObject.url = urlParameter;
       parametersObject.type = type;
@@ -67,7 +66,7 @@ const app = express();
           // TODO ugh refactor this
           fileName = utils.removeDiacritics(res[0]).replace(/[^a-z0-9]/gi, '-').replace(/[-]+/g,'-').toLowerCase().substring(0,30) + ts +'.png';
           response.set({
-            'Content-Type': 'application/octect-stream',
+            'Content-Type': 'application/octet-stream',
             'Content-Disposition': `attachment; filename=${fileName}`
           }).send(screenshotContent);
         }
