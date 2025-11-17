@@ -28,7 +28,7 @@ function validateUrl(urlParameter, allowedDomains){
         return result;
     }
     catch(error) {
-        console.error('Error validating the URL', error);
+        console.log('Error validating the URL', error);
         return null;
     };
 }
