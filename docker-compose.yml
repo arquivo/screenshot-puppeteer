@@ -3,5 +3,8 @@ services:
   webrender:
     build: .
     container_name: puppeteer-webrender
+    volumes:
+      - ./app:/app/app
+      - ./tests:/app/tests
     ports:
       - "5000:5000"
