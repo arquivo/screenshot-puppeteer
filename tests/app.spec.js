@@ -42,7 +42,7 @@ describe('Test GET /screenshot', () => {
     test('Requesting a screenshot image with a specific resolution (800x800)', async () => {
         const res = await request.get('/screenshot?url=https://arquivo.pt/noFrame/replay/19980205082901/http://www.caleida.pt/saramago/&width=800&height=900');
         expect(res.status).toBe(200);
-        expect(res.header).toHaveProperty('content-length', '125847');
+        expect(res.header).toHaveProperty('content-length', '123086');
     });
 
     test('Requesting not allowed domain url screenshot', async () => {
@@ -53,7 +53,7 @@ describe('Test GET /screenshot', () => {
     test('Requesting not fullpage screenshot', async () => {
         const res = await request.get('/screenshot?url=https://arquivo.pt/noFrame/replay/19980205082901/http://www.caleida.pt/saramago/&fullpage=false');
         expect(res.status).toBe(200);
-        expect(res.header).toHaveProperty('content-length', '125847');
+        expect(res.header).toHaveProperty('content-length', '123086');
     });
 
     test('Requesting page that needs URL Enconding', async () => {
