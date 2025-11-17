@@ -2,10 +2,31 @@ const app_export = require('../app/app');
 const { Cluster } = require('puppeteer-cluster');
 const supertest = require('supertest');
 
-const request = supertest(app_export);
-
 let cluster;
+let request;
+
 beforeAll(async () => {
+  // Initialize supertest request object
+  request = supertest(app_export);
+
+  // Wait for app to be ready with retry logic
+  let ready = false;
+  let attempts = 0;
+  while (!ready && attempts < 10) {
+    try {
+      const res = await request.get('/screenshot/health');
+      if (res.status === 200) {
+        ready = true;
+      }
+    } catch (err) {
+      // Ignore errors during warmup
+    }
+    if (!ready) {
+      await new Promise(resolve => setTimeout(resolve, 500));
+      attempts++;
+    }
+  }
+
   cluster = await Cluster.launch({
     // FIXME we should be able to run this in a container with sandbox mode
     puppeteerOptions: { args: ['--no-sandbox', '--disable-setuid-sandbox'] },  
