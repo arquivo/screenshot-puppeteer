@@ -38,8 +38,9 @@ WORKDIR /app
 COPY ./package.json ./package-lock.json ./
 RUN npm install
 
-# Copy application and test files
-COPY ./app ./tests ./
+# Copy application and test files into their expected subdirectories
+COPY ./app ./app
+COPY ./tests ./tests
 
 # Start the application
 CMD ["npm", "start"]
