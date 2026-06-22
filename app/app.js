@@ -31,24 +31,9 @@ let isReady = false;
   isReady = true;
 })();
 
-const healthCheck = async function (request, response) {
+const healthCheck = function (request, response) {
   if (!isReady) {
     return response.status(503).send("Service starting up...");
-  }
-  // Verify cluster health
-  try {
-    await cluster.execute({
-      url: 'about:blank',
-      type: 'png',
-      width: 800,
-      height: 600,
-      fullPage: false,
-      timeout: 1000
-    });
-    console.log('Health check passed');
-  } catch (error) {
-    console.error('Health check failed:', error);
-    return response.status(500).send("Service unhealthy");
   }
   response.status(200).send("OK - Service Ready");
 }
