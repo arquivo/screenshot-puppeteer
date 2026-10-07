@@ -1,9 +1,9 @@
 const express = require('express');
 const render = require('./render');
 const utils = require('./utils');
+const allowlist = require('./allowlist');
 const { Cluster } = require('puppeteer-cluster');
 
-const allowedDomains = process.env.ALLOWED_DOMAINS || 'arquivo.pt'; // accept multiple values comma separated
 const timeout = process.env.SCREENSHOT_TIMEOUT || 45000;
 const type = process.env.SCREENSHOT_TYPE || 'png';
 const maxConcurrency = process.env.MAX_CONCURRENCY || 5;
@@ -13,6 +13,10 @@ let height = process.env.SCREENSHOT_HEIGHT || 900;
 
 // launch server
 const app = express();
+
+const allowed = allowlist.describeAllowlist();
+console.log("Allowed URL prefixes: " + allowed.navigation.join(', '));
+console.log("Allowed sub resource only URL prefixes: " + (allowed.subresourceOnly.join(', ') || '(none)'));
 
 let cluster;
 let isReady = false;
@@ -51,12 +55,18 @@ app.get('/screenshot(/)?', async function (request, response) {
   let downloadImage = (request.query.download == null) ? true : utils.textBoolean(request.query.download);
   let fullPage = (request.query.fullpage == null) ? true : utils.textBoolean(request.query.fullpage);
 
-  // verify if root domain match. if not allowed return forbidden operation. if not continue.
-  const allowedDomainsArray = allowedDomains.split(',');
+  // verify the URL is covered by the allowlist. if not allowed return forbidden operation. if not continue.
+  let urlParameter = null;
+  if (typeof request.query.url === 'string') {
+    try {
+      urlParameter = decodeURI(request.query.url);
+    } catch (error) {
+      // decodeURI throws URIError on a malformed percent sequence.
+    }
+  }
 
-  let urlParameter = decodeURI(request.query.url);
   console.log("Starting taking screenshot for URL " + urlParameter)
-  let validUrl = render.validateUrl(urlParameter, allowedDomainsArray);
+  let validUrl = urlParameter !== null && render.validateUrl(urlParameter);
   if (!validUrl) {
     response.status(400).send("Wrong URL to execute the screenshot.");
   } else {
@@ -87,6 +97,11 @@ app.get('/screenshot(/)?', async function (request, response) {
         response.set('Content-Type', 'image/' + type).send(screenshotContent);
       }
     } catch (error) {
+      if (error.code === 'BLOCKED_URL') {
+        // Same generic message, so nothing is disclosed about what is reachable.
+        console.warn('Blocked screenshot:', error.message);
+        return response.status(400).send("Wrong URL to execute the screenshot.");
+      }
       console.error('Screenshot error:', error);
       response.status(500).send("Something went wrong taking the screenshot.");
     }

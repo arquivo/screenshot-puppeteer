@@ -1,3 +1,7 @@
+// Set before app.js is loaded, it reads the allowlist at require time.
+process.env.ALLOWED_URL_PREFIXES = 'https://arquivo.pt/noFrame/replay/';
+process.env.ALLOWED_SUBRESOURCE_URL_PREFIXES = 'https://arquivo.pt/noFrame/static/';
+
 const app_export = require('../app/app');
 const { Cluster } = require('puppeteer-cluster');
 const supertest = require('supertest');
@@ -79,6 +83,28 @@ describe('Test GET /screenshot', () => {
         const res = await request.get('/screenshot?url=https://sobre.arquivo.pt/');
         expect(res.status).toBe(400);
         expect(res.text).toEqual(expect.stringContaining("Wrong URL to execute the screenshot."));
+    });
+
+    test('Requesting a path outside the allowed prefix', async () => {
+        const res = await request.get('/screenshot?url=https://arquivo.pt/');
+        expect(res.status).toBe(400);
+        expect(res.text).toEqual(expect.stringContaining("Wrong URL to execute the screenshot."));
+    });
+
+    test('Requesting an internal address', async () => {
+        const res = await request.get('/screenshot?url=http://127.0.0.1:8787/');
+        expect(res.status).toBe(400);
+        expect(res.text).toEqual(expect.stringContaining("Wrong URL to execute the screenshot."));
+    });
+
+    test('Requesting a file URL', async () => {
+        const res = await request.get('/screenshot?url=file:///etc/passwd');
+        expect(res.status).toBe(400);
+    });
+
+    test('Malformed percent encoding in the url parameter returns error', async () => {
+        const res = await request.get('/screenshot?url=https://arquivo.pt/noFrame/replay/%E0%A4%A');
+        expect(res.status).toBe(400);
     });
 
     test('Requesting not fullpage screenshot', async () => {
