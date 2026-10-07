@@ -1,15 +1,39 @@
 const { validateUrl } = require('../app/render');
 const { renderScreenshot } = require('../app/render');
+const { resetAllowlist } = require('../app/allowlist');
 const { Cluster } = require('puppeteer-cluster');
 
+jest.setTimeout(60000);
+
+// Do not inherit an allowlist from the environment, docker-compose.yml sets one.
+const inheritedEnv = {
+    ALLOWED_URL_PREFIXES: process.env.ALLOWED_URL_PREFIXES,
+    ALLOWED_SUBRESOURCE_URL_PREFIXES: process.env.ALLOWED_SUBRESOURCE_URL_PREFIXES,
+    ALLOWED_DOMAINS: process.env.ALLOWED_DOMAINS,
+};
+
+function useAllowlist(env) {
+    Object.keys(inheritedEnv).forEach(key => delete process.env[key]);
+    Object.assign(process.env, env);
+    resetAllowlist();
+}
+
+afterAll(() => {
+    Object.keys(inheritedEnv).forEach(key => {
+        if (inheritedEnv[key] === undefined) delete process.env[key];
+        else process.env[key] = inheritedEnv[key];
+    });
+    resetAllowlist();
+});
 
 test("Test if validateUrl is working correctly", () => {
     const testUrl1 = "http://covesantigas.com/image.jpg";
     const testUrl2 = "http://arquivo.pt/wayback/2018/http://sapo.pt";
-    const allowedDomains = ['arquivo.pt','covesantigas.com'];
 
-    expect(validateUrl(testUrl1, allowedDomains)).toBeTruthy();
-    expect(validateUrl(testUrl2, allowedDomains)).toBeTruthy();
+    useAllowlist({ ALLOWED_DOMAINS: 'arquivo.pt,covesantigas.com' });
+
+    expect(validateUrl(testUrl1)).toBeTruthy();
+    expect(validateUrl(testUrl2)).toBeTruthy();
 });
 
 const getMimetype = (signature) => {
@@ -32,6 +56,11 @@ const getMimetype = (signature) => {
 };
 
 test("Test screenshot rendering", async () => {
+
+    useAllowlist({
+        ALLOWED_URL_PREFIXES: 'https://arquivo.pt/noFrame/replay/',
+        ALLOWED_SUBRESOURCE_URL_PREFIXES: 'https://arquivo.pt/noFrame/static/',
+    });
 
     // setup task
     const cluster = await Cluster.launch({

@@ -8,3 +8,6 @@ services:
       - ./tests:/app/tests
     ports:
       - "5000:5000"
+    environment:
+      - ALLOWED_URL_PREFIXES=https://arquivo.pt/noFrame/replay/
+      - ALLOWED_SUBRESOURCE_URL_PREFIXES=https://arquivo.pt/noFrame/static/
