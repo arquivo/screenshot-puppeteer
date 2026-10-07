@@ -115,8 +115,9 @@ allowlist or the request filtering changes.
 npm run test:live
 ```
 
-In CI it is the *Test against live arquivo.pt* job, triggered manually from the
-Actions tab (`workflow_dispatch`).
+In CI it is the *Live test* workflow, which is manual only
+(`.github/workflows/live-test.yml`). It is kept out of `ci.yml` so that
+triggering it can never publish a Docker image.
 
 ### Debugging a suite that does not exit
 
