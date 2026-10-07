@@ -1,0 +1,30 @@
+name: Live test
+description: Runs the smoke test against the real arquivo.pt
+
+# Manual only. This hits a public service that is outside this repository's
+# control, so it must never gate a merge. Run it when the allowlist or the
+# request filtering in app/render.js changes, to confirm a real pywb replay
+# still renders with nothing refused.
+on:
+  workflow_dispatch:
+
+jobs:
+  live-test:
+    name: Test against live arquivo.pt
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '25.2.0'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests against arquivo.pt
+        run: npm run test:live
