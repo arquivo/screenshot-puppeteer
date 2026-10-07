@@ -41,9 +41,20 @@ async function renderScreenshot({page, data: parametersObject }) {
         height: parametersObject.height
     })
 
-    const pageTitle = await page.title();
+    const pageTitle = await readTitle(page);
     let result = await page.screenshot({type: parametersObject.type, fullPage: parametersObject.fullPage});
     return [ pageTitle, result ];
+}
+
+async function readTitle(page) {
+    try {
+        return await page.title();
+    } catch (error) {
+        // "Execution context was destroyed" when the document request never
+        // completed. There is still a screenshot worth returning.
+        console.warn('Could not read the page title:', error.message);
+        return '';
+    }
 }
 
 function validateUrl(urlParameter){

@@ -1,6 +1,7 @@
 const { validateUrl } = require('../app/render');
 const { renderScreenshot } = require('../app/render');
 const { resetAllowlist } = require('../app/allowlist');
+const { startReplayServer } = require('./fixtures/replay-server');
 const { Cluster } = require('puppeteer-cluster');
 
 jest.setTimeout(60000);
@@ -55,40 +56,52 @@ const getMimetype = (signature) => {
     }
 };
 
-test("Test screenshot rendering", async () => {
+describe("Test screenshot rendering", () => {
+    let replay;
+    let cluster;
 
-    useAllowlist({
-        ALLOWED_URL_PREFIXES: 'https://arquivo.pt/noFrame/replay/',
-        ALLOWED_SUBRESOURCE_URL_PREFIXES: 'https://arquivo.pt/noFrame/static/',
+    beforeAll(async () => {
+        replay = await startReplayServer();
+
+        useAllowlist({
+            ALLOWED_URL_PREFIXES: replay.navigationPrefix,
+            ALLOWED_SUBRESOURCE_URL_PREFIXES: replay.subresourcePrefix,
+        });
+
+        cluster = await Cluster.launch({
+            // FIXME we should be able to run this in a container with sandbox mode
+            puppeteerOptions: { args: ['--no-sandbox', '--disable-setuid-sandbox'] },
+            concurrency: Cluster.CONCURRENCY_CONTEXT,
+            maxConcurrency: 1,
+        });
+        await cluster.task(renderScreenshot);
+    }, 60000);
+
+    afterAll(async () => {
+        if (cluster) await cluster.close();
+        if (replay) await replay.close();
     });
 
-    // setup task
-    const cluster = await Cluster.launch({
-        // FIXME we should be able to run this in a container with sandbox mode
-        puppeteerOptions: { args: ['--no-sandbox', '--disable-setuid-sandbox'] },  
-        concurrency: Cluster.CONCURRENCY_CONTEXT,
-        maxConcurrency: 1,
-    })
+    test("renders a replayed page and returns its title", async () => {
+        const parametersObject = {
+            url: replay.replayUrl('20200117173921', 'http://senior3045.ipportalegre.pt/'),
+            type: 'png',
+            width: 1280,
+            height: 900,
+            fullPage: true,
+            timeout: 10000,
+        };
 
-    await cluster.task(renderScreenshot);
+        const res = await cluster.execute(parametersObject);
+        expect(res[0]).toBe('Senior3045 Home page');
 
-    var parametersObject = new Object();
-    parametersObject.url = 'https://arquivo.pt/noFrame/replay/20200117173921/http://senior3045.ipportalegre.pt/';
-    parametersObject.type = 'png';
-    parametersObject.width = 1280;
-    parametersObject.height = 900;
-    parametersObject.fullPage = true;
-    parametersObject.timeout = 10000;
+        const uint = new Uint8Array(res[1]);
+        let bytes = [];
+        uint.forEach((byte) => {
+            bytes.push(byte.toString(16))
+        });
+        const hex = bytes.join('').toLocaleUpperCase();
 
-    let res = await cluster.execute(parametersObject);
-    expect(res[0]).toBe('Senior3045 Home page');
-
-    const uint = new Uint8Array(res[1]);
-    let bytes = [];
-    uint.forEach((byte) => {
-        bytes.push(byte.toString(16))
+        expect(getMimetype(hex.slice(0, 8))).toBe('image/png');
     });
-    const hex = bytes.join('').toLocaleUpperCase();
-
-    expect(getMimetype(hex.slice(0,8))).toBe('image/png');
 });
