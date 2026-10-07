@@ -117,3 +117,20 @@ npm run test:live
 
 In CI it is the *Test against live arquivo.pt* job, triggered manually from the
 Actions tab (`workflow_dispatch`).
+
+### Debugging a suite that does not exit
+
+```bash
+npm run test:debug
+```
+
+This adds `--detectOpenHandles`, which reports async resources still alive at
+the end of a run. It reports one false positive: a `DNSCHANNEL` attributed to
+`app.listen(0, '127.0.0.1', ...)` in the test fixtures. That is node's default
+DNS resolver, a process wide singleton created the first time anything loads
+`node:dns` — `listen()` with a host does, through `lookupAndListen`. Node never
+closes it and `server.close()` cannot release it, so it is not a leak in this
+repository. Anything *else* in that report is worth looking at.
+
+`--detectOpenHandles` also silently forces `--runInBand`, which is why it is
+not in `npm run test`.

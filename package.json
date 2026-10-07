@@ -5,8 +5,9 @@
   "main": "app/app.js",
   "scripts": {
     "start": "node app/start.js",
-    "test": "jest --detectOpenHandles --forceExit",
-    "test:live": "jest tests/live.spec.js --testPathIgnorePatterns=/node_modules/ --detectOpenHandles --forceExit",
+    "test": "jest --forceExit",
+    "test:debug": "jest --detectOpenHandles --runInBand",
+    "test:live": "jest tests/live.spec.js --testPathIgnorePatterns=/node_modules/ --forceExit",
     "dev": "nodemon app/start"
   },
   "jest": {
