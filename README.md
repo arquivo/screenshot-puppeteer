@@ -90,7 +90,10 @@ place to look if a screenshot comes out incomplete.
 
 ## Test
 
-Local testing
+The default suite is hermetic: it serves its own pywb-like replay fixture from
+a loopback port (`tests/fixtures/replay-server.js`) and never touches the
+network, so it is fast and cannot fail because arquivo.pt is slow.
+
 ```bash
 npm install
 npm run test
@@ -101,3 +104,16 @@ Or, run a single command that build and run tests inside docker container:
 ```bash
 docker compose build && docker compose run --rm --remove-orphans -it webrender npm run test
 ```
+
+There is a separate smoke test against the real arquivo.pt. It is not part of
+`npm run test` and does not gate CI, because the service being up and fast is
+outside this repository's control. It checks that a real replay still renders
+with nothing refused by the allowlist, which is worth running whenever the
+allowlist or the request filtering changes.
+
+```bash
+npm run test:live
+```
+
+In CI it is the *Test against live arquivo.pt* job, triggered manually from the
+Actions tab (`workflow_dispatch`).

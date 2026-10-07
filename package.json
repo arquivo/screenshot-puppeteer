@@ -6,7 +6,15 @@
   "scripts": {
     "start": "node app/start.js",
     "test": "jest --detectOpenHandles --forceExit",
+    "test:live": "jest tests/live.spec.js --testPathIgnorePatterns=/node_modules/ --detectOpenHandles --forceExit",
     "dev": "nodemon app/start"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "<rootDir>/tests/live.spec.js"
+    ]
   },
   "repository": {
     "type": "git",
