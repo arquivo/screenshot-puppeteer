@@ -1,8 +1,20 @@
-
 services:
   webrender:
     build: .
     container_name: puppeteer-webrender
+    # Chromium runs with --no-sandbox, so the container is its only isolation.
+    # The image runs as the unprivileged node user (see Dockerfile).
+    read_only: true
+    # Chromium keeps its profile in /tmp and its caches and crash reports in $HOME.
+    # A tmpfs is owned by root unless told otherwise, and Chromium fails to start
+    # when $HOME is not writable, so the home one is given to the node user (1000).
+    tmpfs:
+      - /tmp
+      - /home/node:uid=1000,gid=1000,mode=0700
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    pids_limit: 1024
+    mem_limit: 2g
     volumes:
       - ./app:/app/app
       - ./tests:/app/tests

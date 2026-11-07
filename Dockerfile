@@ -42,5 +42,9 @@ RUN npm install
 COPY ./app ./app
 COPY ./tests ./tests
 
+# Chromium runs with --no-sandbox (see app/app.js), so at least do not run it
+# as root. The node user comes with the base image.
+USER node
+
 # Start the application
 CMD ["npm", "start"]
