@@ -13,11 +13,19 @@ services:
       - /home/node:uid=1000,gid=1000,mode=0700
     cap_drop: [ALL]
     security_opt: ["no-new-privileges:true"]
+    # npm, as PID 1, does not reap the processes a crashed Chromium leaves behind,
+    # and those zombies count against pids_limit.
+    init: true
+    # Local defaults. 5 concurrent renders (MAX_CONCURRENCY) of a light page use
+    # about 320 PIDs and a few hundred MiB, but very tall pages can take several
+    # GiB, so size a deployment from docker stats on its own traffic.
     pids_limit: 1024
     mem_limit: 2g
+    memswap_limit: 2g
+    # Read only, so a compromised browser cannot change the working copy.
     volumes:
-      - ./app:/app/app
-      - ./tests:/app/tests
+      - ./app:/app/app:ro
+      - ./tests:/app/tests:ro
     ports:
       - "5000:5000"
     environment:

@@ -43,7 +43,9 @@ COPY ./app ./app
 COPY ./tests ./tests
 
 # Chromium runs with --no-sandbox (see app/app.js), so at least do not run it
-# as root. The node user comes with the base image.
+# as root, and leave no setuid or setgid binary to get root back with. The node
+# user comes with the base image.
+RUN find / -xdev -perm /6000 -type f -exec chmod a-s {} +
 USER node
 
 # Start the application
