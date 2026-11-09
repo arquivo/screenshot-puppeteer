@@ -107,3 +107,6 @@ dist
 .vscode-test
 .vscode/launch.json
 arquivo-webrender.code-workspace
+
+# Temporary screenshots
+*.png
