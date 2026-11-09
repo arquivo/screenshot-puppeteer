@@ -43,5 +43,8 @@
     "jest": "^25.5.4",
     "nodemon": "^2.0.22",
     "supertest": "^4.0.2"
+  },
+  "allowScripts": {
+    "puppeteer@5.5.0": true
   }
 }
