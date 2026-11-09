@@ -12,6 +12,12 @@ jobs:
   live-test:
     name: Test against live arquivo.pt
     runs-on: ubuntu-latest
+    env:
+      # Use the runner's Google Chrome, as the image uses its system Chromium
+      # (see Dockerfile). puppeteer's own Chromium download does not complete
+      # under Node 26.
+      PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: 'true'
+      PUPPETEER_EXECUTABLE_PATH: /usr/bin/google-chrome
 
     steps:
       - name: Checkout code
