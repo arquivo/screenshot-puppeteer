@@ -1,4 +1,4 @@
-FROM docker.io/library/node:25.2.0
+FROM docker.io/library/node:26.13-trixie
 
 # Install necessary dependencies for Puppeteer and Chromium
 RUN apt-get update && apt-get install -y --no-install-recommends \
