@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Rendering webpages through puppeteer.",
   "main": "app/app.js",
+  "engines": {
+    "node": ">=26"
+  },
   "scripts": {
     "start": "node app/start.js",
     "test": "jest --forceExit",
@@ -40,5 +43,8 @@
     "jest": "^25.5.4",
     "nodemon": "^2.0.22",
     "supertest": "^4.0.2"
+  },
+  "allowScripts": {
+    "puppeteer": false
   }
 }

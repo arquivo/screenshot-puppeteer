@@ -96,8 +96,12 @@ network, so it is fast and cannot fail because arquivo.pt is slow.
 
 ```bash
 npm install
-npm run test
+PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium npm run test
 ```
+
+puppeteer does not download a Chromium of its own (its install script is
+denied in `package.json`, and the download does not complete under Node 26), so
+point `PUPPETEER_EXECUTABLE_PATH` at a locally installed Chromium or Chrome.
 
 Or, run a single command that build and run tests inside docker container:
 
